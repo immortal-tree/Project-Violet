@@ -1,22 +1,36 @@
 import { useState, useEffect, useRef } from 'react';
 import typewriterImg from '../../assets/typewriter.png';
+import {
+  playKeyClick,
+  playCarriageReturn,
+  startAmbientWind,
+} from '../../hooks/useSoundEffect';
 
 const LINES = [
   'Invisible work',
   'deserves to be seen.',
 ];
 
-const FONT_SIZE = 16;   // keep in sync with tuned fontSize (16)
-const LINE_HEIGHT = FONT_SIZE * 1.65;
+const FONT_SIZE = 14;   // slightly smaller font size for the paper text
+const LINE_HEIGHT = FONT_SIZE * 1.7;
 
-// Typing speed
-const BASE_MS = 105;
-const JITTER = 55;
-// Slightly slower for spaces and punctuation
-const SLOW = { ' ': 40, '.': 90, ',': 65 };
+// Typing speed config for realistic vintage mechanical rhythm
+const BASE_MS = 110;     // base keystroke delay
+const JITTER = 70;      // random timing variance (+/- 70ms)
+const PAUSE_SPACE = 260; // hesitation between words
+const PAUSE_PUNCT = 680; // realistic carriage strike pause on punctuation
 
 function nextDelay(ch) {
-  return (SLOW[ch] ?? BASE_MS) + (Math.random() * JITTER * 2 - JITTER);
+  // 7% chance of a minor mechanical hesitation or typist thinking delay (220-450ms)
+  const hesitation = Math.random() < 0.07 ? 220 + Math.random() * 230 : 0;
+  
+  if (ch === ' ') {
+    return PAUSE_SPACE + (Math.random() * 60 - 30) + hesitation;
+  }
+  if (ch === '.' || ch === ',' || ch === '!') {
+    return PAUSE_PUNCT + (Math.random() * 120 - 60);
+  }
+  return BASE_MS + (Math.random() * JITTER * 2 - JITTER) + hesitation;
 }
 
 export default function TypewriterScene() {
@@ -50,6 +64,7 @@ export default function TypewriterScene() {
           next[next.length - 1] = line.slice(0, charIdx);
           return next;
         });
+        playKeyClick();
         t.current = setTimeout(tick, nextDelay(ch));
 
       } else {
@@ -57,10 +72,10 @@ export default function TypewriterScene() {
         lineIdx++;
         if (lineIdx < LINES.length) {
           charIdx = 0;
-          // Pause, then push a new empty line (paper advances)
+          playCarriageReturn();
           t.current = setTimeout(() => {
             setLines(prev => [...prev, '']);
-            t.current = setTimeout(tick, 80);
+            t.current = setTimeout(tick, 1200); // 1.2s pause after line moves up
           }, 380);
         } else {
           setDone(true);
@@ -68,7 +83,10 @@ export default function TypewriterScene() {
       }
     }
 
-    t.current = setTimeout(tick, 700);
+    t.current = setTimeout(() => {
+      startAmbientWind();
+      tick();
+    }, 700);
     return () => clearTimeout(t.current);
   }, []);
 

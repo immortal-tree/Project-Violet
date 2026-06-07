@@ -191,3 +191,8 @@ export const WORKSPACE_SOURCES = [
   { id: "jira",   label: "Jira",    icon: "jira",    color: "#0052cc" },
   { id: "notion", label: "Notion",  icon: "notion",  color: "#ffffff" },
 ];
+
+let IS_LOGGED_IN = false;
+export function setLoggedIn(v) { IS_LOGGED_IN = v; }
+export function getLoggedIn()  { return IS_LOGGED_IN; }
+

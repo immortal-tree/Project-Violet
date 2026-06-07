@@ -1,12 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import PetalCanvas from '../components/ui/PetalCanvas';
 import TypewriterScene from '../components/landing/TypewriterScene';
 import BrandTitle from '../components/landing/BrandTitle';
 import ConnectButton from '../components/landing/ConnectButton';
 import FloatingQuote from '../components/landing/FloatingQuote';
 import CandleGlows from '../components/landing/CandleGlows';
+import { unlockAudio } from '../hooks/useSoundEffect';
 
 export default function Landing() {
+  useEffect(() => {
+    const unlock = () => {
+      unlockAudio();
+      window.removeEventListener('pointerdown', unlock);
+    };
+    window.addEventListener('pointerdown', unlock);
+    return () => window.removeEventListener('pointerdown', unlock);
+  }, []);
+
   return (
     <div
       style={{

@@ -1,377 +1,657 @@
-import React, { useEffect, useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import PetalCanvas from '../components/ui/PetalCanvas';
+import connectBg from '../assets/connect-bg.jpg';
+import githubIcon from '../assets/icons/github.svg';
+import slackIcon from '../assets/icons/slack.svg';
+import jiraIcon from '../assets/icons/jira.svg';
+import notionIcon from '../assets/icons/notion.svg';
 import { useAuth } from '../hooks/useAuth';
-import { useConnectionState } from '../hooks/useConnectionState';
-import { useSoundEffect } from '../hooks/useSoundEffect';
-import {
-  QuillIcon,
-  SpinnerIcon,
-  GitHubBrandIcon,
-  SlackBrandIcon,
-  JiraBrandIcon,
-  NotionBrandIcon
-} from '../components/icons';
+import Firefly from '../components/landing/Firefly';
 
-export const SourceCard = ({ source, onConnect }) => {
-  const playSound = useSoundEffect();
-  const { id, label, color, status } = source;
+// ─── Data ────────────────────────────────────────────────────────────────────
 
-  const renderIcon = () => {
-    const iconSize = 32;
-    switch (id) {
-      case 'github':
-        return <GitHubBrandIcon size={iconSize} style={{ color }} />;
-      case 'slack':
-        return <SlackBrandIcon size={iconSize} style={{ color }} />;
-      case 'jira':
-        return <JiraBrandIcon size={iconSize} style={{ color }} />;
-      case 'notion':
-        return <NotionBrandIcon size={iconSize} style={{ color }} />;
-      default:
-        return null;
-    }
-  };
+const SOURCES = [
+  { id: 'github', label: 'GitHub', icon: githubIcon, invertIcon: true },
+  { id: 'slack',  label: 'Slack',  icon: slackIcon },
+  { id: 'jira',   label: 'Jira',   icon: jiraIcon },
+  { id: 'notion', label: 'Notion', icon: notionIcon, invertIcon: true },
+];
 
-  const handleConnect = () => {
-    playSound('click');
-    onConnect(id);
-  };
+function statusInfo(state) {
+  if (state === 'connected') return { color: '#4caf86', text: 'Live' };
+  if (state === 'connecting') return { color: '#e8a84a', text: 'Syncing' };
+  return { color: 'rgba(255,255,255,0.2)', text: 'Disconnected' };
+}
 
-  const getStatusText = () => {
-    if (status === 'live') return 'Live';
-    if (status === 'connecting') return 'Syncing';
-    return 'Disconnected';
-  };
+// ─── SourceCard ──────────────────────────────────────────────────────────────
 
-  const getStatusColor = () => {
-    if (status === 'live') return 'var(--success)';
-    if (status === 'connecting') return 'var(--warning)';
-    return 'var(--text-muted)';
-  };
+function SourceCard({ source, state, onConnect }) {
+  const [hovered, setHovered] = useState(false);
+  const { color, text } = statusInfo(state);
+  const isConnected = state === 'connected';
+  const isConnecting = state === 'connecting';
 
   return (
-    <div
-      className="card-surface flex flex-col justify-between"
+    <div style={{
+      width: 200,
+      minHeight: 260,
+      background: 'rgba(10,8,20,0.75)',
+      border: `1px solid ${isConnected
+        ? 'rgba(91,69,196,0.6)'
+        : 'rgba(42,37,69,0.8)'}`,
+      borderRadius: 16,
+      backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
+      boxShadow: isConnected
+        ? 'inset 0 0 30px rgba(91,69,196,0.08)'
+        : 'none',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      padding: '32px 20px 24px',
+      transition: 'border 0.3s ease, box-shadow 0.3s ease',
+    }}>
+
+      {/* Icon */}
+      <img
+        src={source.icon}
+        alt={source.label}
+        width={64}
+        height={64}
+        style={{
+          objectFit: 'contain',
+          filter: source.invertIcon ? 'invert(0.85)' : 'none',
+        }}
+      />
+
+      {/* Name */}
+      <span style={{
+        fontFamily: "'Inter', sans-serif",
+        fontSize: 18,
+        fontWeight: 500,
+        color: '#e8e2fc',
+        marginTop: 16,
+      }}>
+        {source.label}
+      </span>
+
+      {/* Status dot + label */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 7,
+        marginTop: 10,
+      }}>
+        <div style={{
+          width: 8,
+          height: 8,
+          borderRadius: '50%',
+          background: color,
+          boxShadow: isConnected ? `0 0 6px ${color}` : 'none',
+          transition: 'background 0.4s ease',
+        }} />
+        <span style={{
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 13,
+          color: isConnected ? color : '#a89ed4',
+        }}>
+          {text}
+        </span>
+      </div>
+
+      {/* Button */}
+      <button
+        onClick={() => !isConnected && !isConnecting && onConnect(source.id)}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        disabled={isConnected || isConnecting}
+        style={{
+          marginTop: 20,
+          width: '100%',
+          padding: '10px 0',
+          background: 'rgba(20,17,38,0.9)',
+          border: `1px solid ${hovered && !isConnected
+            ? 'rgba(91,69,196,0.6)'
+            : 'rgba(42,37,69,0.8)'}`,
+          borderRadius: 8,
+          color: isConnected ? '#e8e2fc' : '#a89ed4',
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 14,
+          cursor: isConnected || isConnecting ? 'default' : 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 8,
+          transition: 'border 0.25s ease, color 0.25s ease',
+        }}
+      >
+        {isConnecting && (
+          <div style={{
+            width: 12,
+            height: 12,
+            borderRadius: '50%',
+            border: '2px solid rgba(164,142,210,0.3)',
+            borderTop: '2px solid #a48ee8',
+            animation: 'spin 0.8s linear infinite',
+          }} />
+        )}
+        {isConnected ? 'Connected  ✓' : isConnecting ? 'Connecting...' : 'Connect'}
+      </button>
+
+    </div>
+  );
+}
+
+// ─── BarSpark ────────────────────────────────────────────────────────────────
+
+function BarSpark() {
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    canvas.width  = 60;
+    canvas.height = 60;
+
+    const sparks = Array.from({ length: 10 }, () => spawnSpark());
+
+    function spawnSpark() {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 0.3 + Math.random() * 0.6;
+      return {
+        x:       30,
+        y:       30,
+        vx:      Math.cos(angle) * speed,
+        vy:      Math.sin(angle) * speed,
+        size:    1.5 + Math.random() * 2.5,
+        life:    1.0,
+        decay:   0.018 + Math.random() * 0.022,
+      };
+    }
+
+    function drawSparkle(ctx, x, y, size, opacity) {
+      ctx.save();
+      ctx.globalAlpha = opacity;
+      ctx.translate(x, y);
+      ctx.shadowBlur  = size * 3;
+      ctx.shadowColor = `rgba(220, 190, 255, ${opacity})`;
+      // 4-point star: two thin crosses overlaid
+      [0, Math.PI / 4].forEach(angle => {
+        ctx.save();
+        ctx.rotate(angle);
+        ctx.beginPath();
+        ctx.moveTo(0, -size * 2.2);
+        ctx.lineTo(size * 0.18, 0);
+        ctx.lineTo(0, size * 2.2);
+        ctx.lineTo(-size * 0.18, 0);
+        ctx.closePath();
+        ctx.fillStyle = `rgba(255, 245, 210, ${opacity})`;
+        ctx.fill();
+        ctx.restore();
+      });
+      // Bright center dot
+      ctx.beginPath();
+      ctx.arc(0, 0, size * 0.3, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 255, 255, ${opacity})`;
+      ctx.fill();
+      ctx.restore();
+    }
+
+    let animId;
+    function animate() {
+      ctx.clearRect(0, 0, 60, 60);
+
+      sparks.forEach((s, i) => {
+        s.x        += s.vx;
+        s.y        += s.vy;
+        s.life     -= s.decay;
+
+        if (s.life <= 0) sparks[i] = spawnSpark();
+
+        drawSparkle(ctx, s.x, s.y, s.size, s.life * 0.85);
+      });
+
+      animId = requestAnimationFrame(animate);
+    }
+
+    animate();
+    return () => cancelAnimationFrame(animId);
+  }, []);
+
+  return (
+    <canvas
+      ref={canvasRef}
       style={{
-        padding: 'var(--space-md) var(--space-lg)',
-        minHeight: '160px',
-        backgroundColor: 'var(--bg-surface)',
-        border: `1px solid ${status === 'live' ? 'var(--violet-deep)' : 'var(--bg-border)'}`,
-        transition: 'border-color var(--transition-normal)'
+        position:      'absolute',
+        right:         -30,
+        top:           '50%',
+        transform:     'translateY(-50%)',
+        width:         60,
+        height:        60,
+        pointerEvents: 'none',
       }}
-    >
-      <div className="flex justify-between align-center" style={{ width: '100%' }}>
-        {renderIcon()}
-        {/* Status indicator dot */}
-        <div className="flex align-center gap-xs">
-          <span
-            style={{
-              width: '8px',
-              height: '8px',
-              borderRadius: '50%',
-              backgroundColor: getStatusColor(),
-              boxShadow: status === 'live' ? '0 0 8px var(--success)' : 'none'
-            }}
-          />
-          <span style={{ fontSize: '11px', color: 'var(--text-secondary)', fontWeight: '500' }}>
-            {getStatusText()}
-          </span>
+    />
+  );
+}
+
+// ─── ProgressSection ─────────────────────────────────────────────────────────
+
+function ProgressSection({ onComplete, isAdditional }) {
+  const [pct, setPct] = useState(0);
+  const [mounted, setMounted] = useState(false);
+  const intervalRef = useRef(null);
+
+  // Fade-in entry via double rAF
+  useEffect(() => {
+    requestAnimationFrame(() =>
+      requestAnimationFrame(() => setMounted(true))
+    );
+  }, []);
+
+  // Count up 0→100 over ~6000ms with organic jitter
+  useEffect(() => {
+    const step = 100 / (6000 / 80);
+    intervalRef.current = setInterval(() => {
+      setPct(p => {
+        const next = Math.min(100, p + step + (Math.random() * step * 0.4));
+        if (next >= 100) {
+          clearInterval(intervalRef.current);
+          onComplete();
+        }
+        return next;
+      });
+    }, 80);
+    return () => clearInterval(intervalRef.current);
+  }, [onComplete]);
+
+  const displayPct = Math.floor(pct);
+
+  return (
+    <div style={{
+      width: '100%',
+      maxWidth: 860,
+      background: 'rgba(10,8,20,0.75)',
+      border: '1px solid rgba(42,37,69,0.8)',
+      borderRadius: 16,
+      backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
+      padding: '32px 40px',
+      opacity: mounted ? 1 : 0,
+      transform: mounted ? 'translateY(0)' : 'translateY(16px)',
+      transition: 'opacity 0.6s ease, transform 0.6s ease',
+    }}>
+
+      {/* Label */}
+      <p style={{
+        fontFamily: "'Lora', Georgia, serif",
+        fontStyle: 'italic',
+        fontSize: 20,
+        color: '#e8c97a',
+        textAlign: 'center',
+        margin: '0 0 24px 0',
+      }}>
+        {pct >= 100
+          ? (isAdditional ? "Additional signals integrated." : "Signals read. The record is complete.")
+          : (isAdditional ? "Reading additional signals..." : "We're reading the signals.")
+        }
+      </p>
+
+      {/* Bar row */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+
+        {/* Track */}
+        <div style={{
+          flex: 1,
+          height: 6,
+          background: 'rgba(42,37,69,0.8)',
+          borderRadius: 999,
+          position: 'relative',
+          overflow: 'visible',
+        }}>
+          {/* Fill */}
+          <div style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            height: '100%',
+            width: `${pct}%`,
+            background: 'linear-gradient(90deg, #3d2f8a, #7c65d6)',
+            borderRadius: 999,
+            transition: 'width 0.08s linear',
+            overflow: 'visible',
+          }}>
+            {/* Diamond firefly spark at leading edge */}
+            <BarSpark />
+          </div>
         </div>
-      </div>
 
-      <div style={{ marginTop: 'var(--space-sm)' }}>
-        <h4 className="font-display" style={{ fontSize: '16px', color: 'var(--text-primary)' }}>
-          {label}
-        </h4>
-      </div>
-
-      <div style={{ marginTop: 'var(--space-md)' }}>
-        {status === 'disconnected' && (
-          <button
-            onClick={handleConnect}
-            className="btn-secondary"
-            style={{ width: '100%', fontSize: '12px', padding: '6px 12px' }}
-          >
-            Connect
-          </button>
-        )}
-        {status === 'connecting' && (
-          <button
-            disabled
-            className="btn-secondary flex align-center justify-center gap-xs"
-            style={{ width: '100%', fontSize: '12px', padding: '6px 12px', opacity: 0.8 }}
-          >
-            <SpinnerIcon size={14} />
-            Connecting...
-          </button>
-        )}
-        {status === 'live' && (
-          <button
-            disabled
-            className="btn-primary"
-            style={{
-              width: '100%',
-              fontSize: '12px',
-              padding: '6px 12px',
-              background: 'rgba(76, 175, 134, 0.15)',
-              borderColor: 'var(--success)',
-              color: 'var(--success)',
-              boxShadow: 'none'
-            }}
-          >
-            Connected ✓
-          </button>
-        )}
+        {/* Percentage */}
+        <span style={{
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 14,
+          color: '#a89ed4',
+          minWidth: 38,
+          textAlign: 'right',
+        }}>
+          {displayPct}%
+        </span>
       </div>
     </div>
   );
-};
+}
 
-export const Connect = () => {
-  const navigate = useNavigate();
-  const playSound = useSoundEffect();
+// ─── Main Page ────────────────────────────────────────────────────────────────
+
+export default function Connect() {
   const { login } = useAuth();
-  const { sources, connectSource, getConnectedCount } = useConnectionState();
-  const [progress, setProgress] = useState(0);
-  const [progressComplete, setProgressComplete] = useState(false);
+  const navigate = useNavigate();
+  const [states, setStates] = useState({
+    github: 'disconnected',
+    slack: 'disconnected',
+    jira: 'disconnected',
+    notion: 'disconnected',
+  });
 
-  const connectedCount = getConnectedCount();
+  const connectedCount = Object.values(states).filter(s => s === 'connected').length;
+  const showProgress = connectedCount >= 2;
+  const [ready, setReady] = useState(false);
+  const [btnHovered, setBtnHovered] = useState(false);
 
-  // Trigger progress animation when at least 2 sources connected
+  // Reset ready state to hide the continue button and force a reload when new sources connect
   useEffect(() => {
-    if (connectedCount >= 2) {
-      setProgress(0);
-      setProgressComplete(false);
-      
-      const duration = 4000; // 4 seconds progress bar
-      const intervalTime = 40; // update every 40ms
-      const increment = (100 / duration) * intervalTime;
-
-      const timer = setInterval(() => {
-        setProgress((prev) => {
-          const next = prev + increment;
-          if (next >= 100) {
-            clearInterval(timer);
-            setProgressComplete(true);
-            return 100;
-          }
-          return next;
-        });
-      }, intervalTime);
-
-      return () => clearInterval(timer);
-    } else {
-      setProgress(0);
-      setProgressComplete(false);
-    }
+    setReady(false);
   }, [connectedCount]);
 
-  const handleContinue = () => {
-    playSound('click');
-    login();
-    navigate('/transition');
-  };
+  const isConnecting = Object.values(states).some(s => s === 'connecting');
+
+  function handleConnect(id) {
+    setStates(s => ({ ...s, [id]: 'connecting' }));
+    setTimeout(() => {
+      setStates(s => ({ ...s, [id]: 'connected' }));
+    }, 1800);
+  }
 
   return (
-    <div
-      className="flex"
-      style={{
-        width: '100vw',
-        height: '100vh',
-        backgroundColor: 'var(--bg-void)',
-        overflow: 'hidden'
-      }}
-    >
-      {styleTag}
-      {/* Left Panel (40%) */}
-      <div
-        className="flex flex-col justify-between parchment-left-panel"
-        style={{
-          width: '40%',
-          height: '100%',
-          padding: 'var(--space-2xl) var(--space-xl)',
-          borderRight: '1px solid var(--gold-warm)',
-          position: 'relative'
-        }}
-      >
-        {/* Parchment background overlay */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            background: 'linear-gradient(135deg, #1f170b 0%, #0c0a06 100%)',
-            opacity: 0.9,
-            zIndex: -1
-          }}
-        />
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.55' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E")`,
-            opacity: 0.7,
-            zIndex: -1
-          }}
-        />
+    <div style={{
+      position: 'relative',
+      width: '100vw',
+      height: '100vh',
+      overflow: 'hidden',
+      background: '#05040e',
+    }}>
 
-        {/* Top Logo */}
-        <div className="flex align-center gap-xs" style={{ color: 'var(--gold-bright)' }}>
-          <QuillIcon size={32} />
-          <span className="font-display" style={{ fontSize: '20px', fontWeight: '600', letterSpacing: '0.05em' }}>
-            Auto Memory
-          </span>
+      {/* Background */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        backgroundImage: `url(${connectBg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        zIndex: 0,
+      }} />
+
+      {/* Dark overlay — stronger than landing */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        background: 'radial-gradient(ellipse at center, rgba(5,4,14,0.55) 0%, rgba(5,4,14,0.82) 100%)',
+        zIndex: 0,
+        pointerEvents: 'none',
+      }} />
+
+      {/* Petals */}
+      <PetalCanvas page="connect" />
+
+      {/* Content */}
+      <div style={{
+        position: 'absolute',
+        inset: 0,
+        zIndex: 2,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 48,
+        paddingTop: '0',
+        paddingBottom: '8vh',
+        paddingLeft: '40px',
+        paddingRight: '40px',
+        overflowY: 'auto',
+      }}>
+
+        {/* Header */}
+        <div style={{
+          textAlign: 'center',
+          position: 'relative',
+          padding: '8px 24px',
+          overflow: 'visible',
+        }}>
+          {/* Firefly beads emanating from the header title area */}
+          <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 3 }}>
+            <Firefly hovered={false} hw={220} hh={30} idleInterval={120} hoverInterval={120} />
+            <Firefly hovered={false} hw={200} hh={24} idleInterval={140} hoverInterval={140} />
+          </div>
+
+          <h1 style={{
+            fontFamily: "'Cinzel', serif",
+            fontSize: 'clamp(28px, 4vw, 46px)',
+            fontWeight: 600,
+            color: '#e8c97a',
+            margin: '0 0 12px 0',
+            letterSpacing: '0.04em',
+            position: 'relative',
+            zIndex: 2,
+            animation: 'brand-text-glow 18s ease-in-out infinite',
+          }}>
+            Connect your workspace
+          </h1>
+          <p style={{
+            fontFamily: "'Lora', Georgia, serif",
+            fontStyle: 'italic',
+            fontSize: 16,
+            color: '#a89ed4',
+            margin: 0,
+            position: 'relative',
+            zIndex: 2,
+          }}>
+            We'll gather the signals to surface invisible impact.
+          </p>
+
+          {/* Embedded CSS Keyframes for synced text glow animations */}
+          <style>{`
+            @keyframes brand-text-glow {
+              0%, 100% {
+                text-shadow: 0 0 15px rgba(223, 163, 71, 0.55), 0 0 30px rgba(223, 163, 71, 0.3), 0 0 60px rgba(223, 163, 71, 0.12);
+              }
+              8% {
+                text-shadow: 0 0 18px rgba(223, 163, 71, 0.6), 0 0 35px rgba(223, 163, 71, 0.35), 0 0 70px rgba(223, 163, 71, 0.15);
+              }
+              10% {
+                text-shadow: 0 0 12px rgba(223, 163, 71, 0.45), 0 0 25px rgba(223, 163, 71, 0.22), 0 0 50px rgba(223, 163, 71, 0.1);
+              }
+              12% {
+                text-shadow: 0 0 16px rgba(223, 163, 71, 0.58), 0 0 32px rgba(223, 163, 71, 0.32), 0 0 65px rgba(223, 163, 71, 0.14);
+              }
+              20% {
+                text-shadow: 0 0 24px rgba(223, 163, 71, 0.75), 0 0 45px rgba(223, 163, 71, 0.45), 0 0 90px rgba(223, 163, 71, 0.25);
+              }
+              25% {
+                text-shadow: 0 0 18px rgba(223, 163, 71, 0.6), 0 0 35px rgba(223, 163, 71, 0.35), 0 0 70px rgba(223, 163, 71, 0.15);
+              }
+              35% {
+                text-shadow: 0 0 12px rgba(223, 163, 71, 0.45), 0 0 25px rgba(223, 163, 71, 0.22), 0 0 50px rgba(223, 163, 71, 0.1);
+              }
+              37% {
+                text-shadow: 0 0 10px rgba(223, 163, 71, 0.4), 0 0 20px rgba(223, 163, 71, 0.2), 0 0 40px rgba(223, 163, 71, 0.08);
+              }
+              48% {
+                text-shadow: 0 0 8px rgba(223, 163, 71, 0.3), 0 0 15px rgba(223, 163, 71, 0.15), 0 0 30px rgba(223, 163, 71, 0.05);
+              }
+              50% {
+                text-shadow: 0 0 9px rgba(223, 163, 71, 0.35), 0 0 18px rgba(223, 163, 71, 0.18), 0 0 35px rgba(223, 163, 71, 0.06);
+              }
+              60% {
+                text-shadow: 0 0 4px rgba(223, 163, 71, 0.2), 0 0 8px rgba(223, 163, 71, 0.08);
+              }
+              65% {
+                text-shadow: 0 0 5px rgba(223, 163, 71, 0.22), 0 0 10px rgba(223, 163, 71, 0.1);
+              }
+              67% {
+                text-shadow: 0 0 3px rgba(223, 163, 71, 0.15), 0 0 6px rgba(223, 163, 71, 0.05);
+              }
+              70% {
+                text-shadow: 0 0 6px rgba(223, 163, 71, 0.25), 0 0 12px rgba(223, 163, 71, 0.12);
+              }
+              75% {
+                text-shadow: 0 0 4px rgba(223, 163, 71, 0.2), 0 0 8px rgba(223, 163, 71, 0.08);
+              }
+              85% {
+                text-shadow: 0 0 9px rgba(223, 163, 71, 0.35), 0 0 18px rgba(223, 163, 71, 0.18), 0 0 35px rgba(223, 163, 71, 0.06);
+              }
+              87% {
+                text-shadow: 0 0 8px rgba(223, 163, 71, 0.3), 0 0 15px rgba(223, 163, 71, 0.15), 0 0 30px rgba(223, 163, 71, 0.05);
+              }
+              95% {
+                text-shadow: 0 0 14px rgba(223, 163, 71, 0.55), 0 0 28px rgba(223, 163, 71, 0.28), 0 0 55px rgba(223, 163, 71, 0.12);
+              }
+            }
+          `}</style>
         </div>
 
-        {/* Inspirational Quote */}
-        <div className="flex flex-col gap-md">
-          <p
-            className="font-body"
+        {/* Source cards */}
+        <div style={{
+          display: 'flex',
+          gap: 20,
+          flexWrap: 'wrap',
+          justifyContent: 'center',
+        }}>
+          {SOURCES.map(source => (
+            <SourceCard
+              key={source.id}
+              source={source}
+              state={states[source.id]}
+              onConnect={handleConnect}
+            />
+          ))}
+        </div>
+
+        {/* Progress — fades in when ≥2 connected */}
+        {showProgress && (
+          <ProgressSection
+            key={connectedCount}
+            onComplete={() => setReady(true)}
+            isAdditional={connectedCount > 2}
+          />
+        )}
+
+        {ready && !isConnecting && (
+          <div
             style={{
-              fontSize: '20px',
-              fontStyle: 'italic',
-              lineHeight: '1.7',
-              color: '#d4b780',
-              textAlign: 'left'
+              position: 'fixed',
+              bottom: 36,
+              right: 48,
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              overflow: 'visible',
+              zIndex: 10,
             }}
           >
-            "We will gather every quiet contribution. Every reviewed line, every answered thread, every closed ticket... until the story of their work is complete."
-          </p>
-          <span className="font-ui" style={{ fontSize: '12px', color: 'var(--gold-warm)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-            — Scriptorium Core Engine
-          </span>
-        </div>
+            {/* Dynamic ambient glow wrapper */}
+            <div style={{
+              position: 'absolute',
+              inset: '-30px -50px',
+              pointerEvents: 'none',
+              zIndex: 1,
+              animation: 'button-glow-opacity 18s ease-in-out infinite',
+            }}>
+              {/* Outer glow layer */}
+              <div style={{
+                position: 'absolute',
+                inset: '8px 5px',
+                clipPath: 'ellipse(50% 50% at 50% 50%)',
+                background: btnHovered
+                  ? 'radial-gradient(ellipse at center, rgba(61,35,160,0.45) 0%, rgba(40,20,110,0.22) 50%, transparent 72%)'
+                  : 'radial-gradient(ellipse at center, rgba(40,22,120,0.35) 0%, rgba(28,14,85,0.15) 50%, transparent 70%)',
+                transition: 'background 0.5s ease',
+              }} />
 
-        {/* Page indicator or subtle note */}
-        <div style={{ color: 'var(--text-muted)', fontSize: '11px' }}>
-          Onboarding Process • Step 1 of 2
-        </div>
-      </div>
+              {/* Core diamond background */}
+              <div style={{
+                position: 'absolute',
+                inset: '22px 20px',
+                clipPath: 'ellipse(50% 50% at 50% 50%)',
+                background: btnHovered
+                  ? 'radial-gradient(ellipse at center, rgba(70,42,180,0.4) 0%, rgba(45,25,130,0.22) 45%, transparent 68%)'
+                  : 'radial-gradient(ellipse at center, rgba(50,28,150,0.35) 0%, rgba(32,16,100,0.18) 45%, transparent 65%)',
+                transition: 'background 0.4s ease',
+              }} />
+            </div>
 
-      {/* Right Panel (60%) */}
-      <div
-        className="flex flex-col justify-center align-center"
-        style={{
-          width: '60%',
-          height: '100%',
-          padding: 'var(--space-2xl) var(--space-xl)',
-          overflowY: 'auto'
-        }}
-      >
-        <div className="flex flex-col" style={{ width: '100%', maxWidth: '540px' }}>
-          {/* Header */}
-          <div style={{ marginBottom: 'var(--space-xl)' }}>
-            <h2
-              className="font-display"
+            {/* The actual button */}
+            <button
+              onClick={() => { login(); navigate('/transition'); }}
+              onMouseEnter={() => setBtnHovered(true)}
+              onMouseLeave={() => setBtnHovered(false)}
               style={{
-                fontSize: '32px',
-                color: 'var(--violet-ghost)',
-                marginBottom: 'var(--space-xs)',
-                letterSpacing: '0.02em'
+                position: 'relative',
+                zIndex: 5,
+                padding: '14px 44px',
+                background: 'transparent',
+                border: 'none',
+                color: '#e8c97a',
+                fontFamily: "'Cinzel', serif",
+                fontSize: 16,
+                letterSpacing: '0.1em',
+                cursor: 'pointer',
+                outline: 'none',
+                transition: 'color 0.3s ease',
+                textShadow: btnHovered
+                  ? '0 0 20px rgba(164, 130, 230, 0.6)'
+                  : '0 0 12px rgba(130, 100, 200, 0.3)',
               }}
             >
-              Connect your workspace
-            </h2>
-            <p className="font-body" style={{ color: 'var(--text-secondary)', fontSize: '15px', fontStyle: 'italic' }}>
-              We'll gather the signals to surface invisible impact. Connect at least 2 sources to begin.
-            </p>
+              Continue →
+            </button>
+
+            {/* Embedded CSS Keyframes for synced button glow opacity */}
+            <style>{`
+              @keyframes button-glow-opacity {
+                0%, 100% { opacity: 0.85; }
+                8% { opacity: 0.90; }
+                10% { opacity: 0.75; }
+                12% { opacity: 0.88; }
+                20% { opacity: 1.0; }
+                25% { opacity: 0.90; }
+                35% { opacity: 0.75; }
+                37% { opacity: 0.70; }
+                48% { opacity: 0.55; }
+                50% { opacity: 0.60; }
+                60% { opacity: 0.35; }
+                65% { opacity: 0.38; }
+                67% { opacity: 0.32; }
+                70% { opacity: 0.42; }
+                75% { opacity: 0.35; }
+                85% { opacity: 0.60; }
+                87% { opacity: 0.55; }
+                95% { opacity: 0.80; }
+              }
+            `}</style>
           </div>
+        )}
 
-          {/* Cards Grid */}
-          <div
-            className="grid"
-            style={{
-              gridTemplateColumns: 'repeat(2, 1fr)',
-              gap: 'var(--space-md)',
-              marginBottom: 'var(--space-xl)'
-            }}
-          >
-            {sources.map((src) => (
-              <SourceCard key={src.id} source={src} onConnect={connectSource} />
-            ))}
-          </div>
-
-          {/* Progress Section */}
-          {connectedCount >= 2 && (
-            <div className="flex flex-col gap-sm animate-fade-up" style={{ width: '100%' }}>
-              <div className="flex justify-between align-center" style={{ width: '100%' }}>
-                <span
-                  className="font-body"
-                  style={{
-                    fontSize: '13px',
-                    fontStyle: 'italic',
-                    color: progressComplete ? 'var(--success)' : 'var(--text-secondary)'
-                  }}
-                >
-                  {progressComplete ? 'Signals gathered successfully ✓' : "We're reading the signals. This takes a few moments."}
-                </span>
-                <span style={{ fontSize: '12px', fontWeight: '600', color: 'var(--gold-bright)' }}>
-                  {Math.round(progress)}%
-                </span>
-              </div>
-
-              {/* Progress Bar Track */}
-              <div
-                style={{
-                  height: '6px',
-                  width: '100%',
-                  backgroundColor: 'var(--bg-elevated)',
-                  borderRadius: 'var(--radius-pill)',
-                  overflow: 'hidden',
-                  position: 'relative'
-                }}
-              >
-                <div
-                  style={{
-                    height: '100%',
-                    width: `${progress}%`,
-                    backgroundColor: progressComplete ? 'var(--success)' : 'var(--violet-mid)',
-                    boxShadow: progressComplete ? '0 0 10px rgba(76, 175, 134, 0.4)' : '0 0 10px rgba(91, 69, 196, 0.4)',
-                    borderRadius: 'var(--radius-pill)',
-                    transition: 'width 0.1s linear'
-                  }}
-                />
-              </div>
-
-              {/* Continue Button */}
-              {progressComplete && (
-                <button
-                  onClick={handleContinue}
-                  className="btn-primary animate-fade-up"
-                  style={{
-                    marginTop: 'var(--space-md)',
-                    padding: '12px',
-                    width: '100%',
-                    boxShadow: '0 4px 15px rgba(91, 69, 196, 0.3)'
-                  }}
-                >
-                  Continue →
-                </button>
-              )}
-            </div>
-          )}
-        </div>
       </div>
+
+      {/* Spinner keyframe */}
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to   { transform: rotate(360deg); }
+        }
+      `}</style>
+
     </div>
   );
-};
-
-const styleTag = (
-  <style>{`
-    @media (max-width: 900px) {
-      .parchment-left-panel {
-        display: none !important;
-      }
-      main, .flex > div {
-        width: 100% !important;
-      }
-    }
-  `}</style>
-);
-
-export default Connect;
+}
