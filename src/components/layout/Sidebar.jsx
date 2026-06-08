@@ -14,6 +14,7 @@ import {
   ChevronRightIcon,
   LavenderSprig
 } from '../icons';
+import sidebarBg from '../../assets/sidebar-bg.jpg';
 
 const SidebarContext = createContext(null);
 
@@ -47,13 +48,13 @@ export const Sidebar = () => {
   const playSound = useSoundEffect();
 
   const navItems = [
-    { label: 'Home', path: '/app/home', icon: HomeIcon },
-    { label: 'Discover', path: '/app/discover', icon: DiscoverIcon },
-    { label: 'Letters', path: '/app/letters', icon: LettersIcon },
-    { label: 'Stories', path: '/app/stories', icon: StoriesIcon },
-    { label: 'Archive', path: '/app/archive', icon: ArchiveIcon },
-    { label: 'Analytics', path: '/app/analytics', icon: AnalyticsIcon },
-    { label: 'Settings', path: '/app/settings', icon: SettingsIcon }
+    { label: 'Home',      path: '/app/home',      icon: HomeIcon,      subtitle: null },
+    { label: 'Discover',  path: '/app/discover',  icon: DiscoverIcon,  subtitle: 'Find hidden heroes' },
+    { label: 'Letters',   path: '/app/letters',   icon: LettersIcon,   subtitle: 'Generated letters' },
+    { label: 'Stories',   path: '/app/stories',   icon: StoriesIcon,   subtitle: 'Impact stories' },
+    { label: 'Archive',   path: '/app/archive',   icon: ArchiveIcon,   subtitle: 'Past letters' },
+    { label: 'Analytics', path: '/app/analytics', icon: AnalyticsIcon, subtitle: 'Insights & impact' },
+    { label: 'Settings',  path: '/app/settings',  icon: SettingsIcon,  subtitle: 'Preferences' },
   ];
 
   const handleToggle = () => {
@@ -63,10 +64,13 @@ export const Sidebar = () => {
 
   return (
     <aside
-      className="flex flex-col justify-between"
+      className="flex flex-col"
       style={{
         width: isExpanded ? '240px' : '64px',
-        backgroundColor: 'var(--bg-surface)',
+        backgroundImage: `url(${sidebarBg})`,
+        backgroundSize: 'contain',
+        backgroundPosition: 'center 75%',
+        backgroundRepeat: 'no-repeat',
         borderRight: '1px solid var(--bg-border)',
         height: '100vh',
         position: 'sticky',
@@ -74,10 +78,12 @@ export const Sidebar = () => {
         left: 0,
         zIndex: 100,
         transition: 'width var(--transition-normal)',
-        overflowX: 'hidden'
+        overflowX: 'hidden',
       }}
     >
-      <div className="flex flex-col" style={{ width: '100%' }}>
+
+      {/* All content above the overlay */}
+      <div className="flex flex-col" style={{ position: 'relative', zIndex: 1, width: '100%', flex: 1, minHeight: 0 }}>
         {/* Top Header Logo Area */}
         <div
           className="flex align-center"
@@ -87,10 +93,10 @@ export const Sidebar = () => {
             borderBottom: '1px solid rgba(42, 37, 69, 0.4)',
             minHeight: '80px',
             whiteSpace: 'nowrap',
-            overflow: 'hidden'
+            overflow: 'hidden',
           }}
         >
-          <div style={{ color: 'var(--gold-bright)', flexShrink: 0 }}>
+          <div style={{ color: '#c9a86c', flexShrink: 0 }}>
             <QuillIcon size={28} />
           </div>
           <span
@@ -102,7 +108,7 @@ export const Sidebar = () => {
               letterSpacing: '0.05em',
               opacity: isExpanded ? 1 : 0,
               visibility: isExpanded ? 'visible' : 'hidden',
-              transition: 'opacity 0.2s, visibility 0.2s'
+              transition: 'opacity 0.2s, visibility 0.2s',
             }}
           >
             Auto Memory
@@ -110,7 +116,7 @@ export const Sidebar = () => {
         </div>
 
         {/* Navigation List */}
-        <nav className="flex flex-col" style={{ padding: 'var(--space-sm) 0', gap: '4px' }}>
+        <nav className="flex flex-col" style={{ padding: 'var(--space-sm) 0', gap: '2px' }}>
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -119,70 +125,121 @@ export const Sidebar = () => {
                 to={item.path}
                 className={({ isActive }) => `flex align-center ${isActive ? 'nav-active' : ''}`}
                 style={({ isActive }) => ({
-                  padding: '12px 20px',
+                  padding: item.subtitle ? '10px 20px 10px 20px' : '12px 20px',
                   gap: '16px',
-                  color: isActive ? 'var(--violet-ghost)' : 'var(--text-secondary)',
+                  color: isActive ? '#e8c97a' : 'var(--text-secondary)',
                   background: isActive ? 'rgba(61, 47, 138, 0.25)' : 'transparent',
-                  borderLeft: isActive ? '3px solid var(--violet-mid)' : '3px solid transparent',
+                  borderLeft: isActive ? '3px solid #c9a86c' : '3px solid transparent',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
-                  transition: 'background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast)'
+                  transition: 'background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast)',
                 })}
                 onClick={() => playSound('nav_click')}
                 data-sound="nav_hover"
+                onMouseEnter={e => {
+                  if (!e.currentTarget.classList.contains('nav-active')) {
+                    e.currentTarget.style.background = 'rgba(91, 69, 196, 0.12)';
+                  }
+                }}
+                onMouseLeave={e => {
+                  if (!e.currentTarget.classList.contains('nav-active')) {
+                    e.currentTarget.style.background = 'transparent';
+                  }
+                }}
               >
-                <div style={{ flexShrink: 0 }}>
-                  <Icon size={20} />
-                </div>
-                <span
-                  style={{
-                    fontFamily: 'var(--font-ui)',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    opacity: isExpanded ? 1 : 0,
-                    visibility: isExpanded ? 'visible' : 'hidden',
-                    transition: 'opacity 0.2s, visibility 0.2s'
-                  }}
-                >
-                  {item.label}
-                </span>
+                {({ isActive }) => (
+                  <>
+                    <div style={{ flexShrink: 0, color: isActive ? '#e8c97a' : '#7c65d6' }}>
+                      <Icon size={20} />
+                    </div>
+                    <div style={{
+                      opacity: isExpanded ? 1 : 0,
+                      visibility: isExpanded ? 'visible' : 'hidden',
+                      transition: 'opacity 0.2s, visibility 0.2s',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '1px',
+                      overflow: 'hidden',
+                    }}>
+                      <span style={{
+                        fontFamily: 'var(--font-ui)',
+                        fontSize: '14px',
+                        fontWeight: '500',
+                        lineHeight: 1.3,
+                      }}>
+                        {item.label}
+                      </span>
+                      {item.subtitle && (
+                        <span style={{
+                          fontFamily: "'Inter', sans-serif",
+                          fontSize: '11px',
+                          color: '#6b6094',
+                          lineHeight: 1.2,
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                        }}>
+                          {item.subtitle}
+                        </span>
+                      )}
+                    </div>
+                  </>
+                )}
               </NavLink>
             );
           })}
         </nav>
-      </div>
 
-      {/* Sidebar Footer */}
-      <div className="flex flex-col align-center" style={{ padding: 'var(--space-md) var(--space-sm)' }}>
-        {/* Lavender Flourish */}
+        {/* Flex spacer pushes quote to the bottom */}
+        <div style={{ flex: 1 }} />
+
+        {/* Bottom Quote — visible only when expanded */}
         {isExpanded && (
-          <div
-            className="flex flex-col align-center"
-            style={{
-              width: '100%',
-              maxHeight: '120px',
-              opacity: 0.25,
-              marginBottom: 'var(--space-md)',
-              textAlign: 'center'
-            }}
-          >
-            <LavenderSprig style={{ width: '40px', height: '80px' }} />
-            <span
-              className="font-body"
-              style={{
-                fontSize: '10px',
-                fontStyle: 'italic',
-                color: 'var(--text-muted)',
-                marginTop: '4px'
-              }}
-            >
-              "Every thread weaves the story."
-            </span>
+          <div style={{
+            padding: '0 20px 28px',
+            opacity: isExpanded ? 1 : 0,
+            transition: 'opacity 0.2s',
+          }}>
+            {/* Ornamental divider */}
+            <svg width="100%" height="14" viewBox="0 0 160 14" style={{ opacity: 0.35, marginBottom: '10px', display: 'block' }} aria-hidden="true">
+              <line x1="0" y1="7" x2="66" y2="7" stroke="#c9a86c" strokeWidth="0.7" />
+              <path d="M76 7 L80 3 L84 7 L80 11 Z" fill="#c9a86c" />
+              <line x1="94" y1="7" x2="160" y2="7" stroke="#c9a86c" strokeWidth="0.7" />
+            </svg>
+
+            <p style={{
+              fontFamily: "'Lora', Georgia, serif",
+              fontStyle: 'italic',
+              fontSize: '11.5px',
+              color: 'rgba(197, 180, 240, 0.5)',
+              margin: '0 0 4px 0',
+              lineHeight: 1.5,
+            }}>
+              "Words have the power to heal, thank, and remember."
+            </p>
+            <p style={{
+              fontFamily: "'Lora', Georgia, serif",
+              fontStyle: 'italic',
+              fontSize: '11px',
+              color: 'rgba(197, 180, 240, 0.3)',
+              margin: 0,
+            }}>
+              — Violet Evergarden
+            </p>
           </div>
         )}
+      </div>
 
-        {/* Toggle Button */}
+      {/* Sidebar Footer — Toggle button */}
+      <div
+        className="flex flex-col align-center"
+        style={{
+          padding: 'var(--space-md) var(--space-sm)',
+          position: 'relative',
+          zIndex: 1,
+        }}
+      >
         <button
           onClick={handleToggle}
           className="flex align-center justify-center btn-secondary"
@@ -193,7 +250,7 @@ export const Sidebar = () => {
             borderRadius: '50%',
             alignSelf: isExpanded ? 'flex-end' : 'center',
             border: '1px solid var(--bg-border)',
-            background: 'var(--bg-elevated)'
+            background: 'var(--bg-elevated)',
           }}
           aria-label={isExpanded ? 'Collapse Sidebar' : 'Expand Sidebar'}
         >
