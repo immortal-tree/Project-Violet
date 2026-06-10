@@ -2,9 +2,11 @@ import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar, SidebarProvider } from './Sidebar';
 import { TopBar } from './TopBar';
+import homeBg from '../../assets/home-bg.jpg';
 
 const AppShellContent = () => {
   const location = useLocation();
+  const isHomePage = location.pathname.endsWith('/home');
   
   const getPageTitle = () => {
     const path = location.pathname;
@@ -49,7 +51,12 @@ const AppShellContent = () => {
             flex: 1,
             overflowY: 'auto',
             padding: 'var(--space-lg)',
-            backgroundColor: 'var(--bg-base)'
+            backgroundColor: 'var(--bg-base)',
+            backgroundImage: isHomePage ? `linear-gradient(rgba(15, 13, 26, 0.85), rgba(15, 13, 26, 0.92)), url(${homeBg})` : 'none',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            backgroundAttachment: 'fixed'
           }}
         >
           <Outlet />

@@ -67,6 +67,7 @@ export const Sidebar = () => {
       className="flex flex-col"
       style={{
         width: isExpanded ? '240px' : '64px',
+        backgroundColor: '#07060f',
         backgroundImage: `url(${sidebarBg})`,
         backgroundSize: 'contain',
         backgroundPosition: 'center 75%',
