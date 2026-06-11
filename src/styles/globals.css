@@ -36,7 +36,7 @@
   /* Fonts */
   --font-display:  'Cinzel', serif;
   --font-body:     'Lora', Georgia, serif;
-  --font-ui:       'Inter', sans-serif;
+  --font-ui: 'Cormorant Garamond', 'Lora', Georgia, serif;
 
   /* Spacing & Radius */
   --radius-sm:   6px;

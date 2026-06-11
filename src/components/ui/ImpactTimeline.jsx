@@ -32,7 +32,7 @@ export const ImpactTimeline = ({ items = [], className = '', ...props }) => {
 
   const handleNodeClick = (id) => {
     playSound('timeline_click');
-    navigate('/app/analytics');
+    navigate('/app/discover');
   };
 
   return (

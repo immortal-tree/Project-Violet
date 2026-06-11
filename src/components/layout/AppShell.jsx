@@ -13,9 +13,6 @@ const AppShellContent = () => {
     if (path.endsWith('/home')) return 'The Scriptorium';
     if (path.endsWith('/discover')) return 'The Hall of Heroes';
     if (path.endsWith('/letters')) return 'The Letter Room';
-    if (path.endsWith('/stories')) return 'Chronicles of Impact';
-    if (path.endsWith('/archive')) return 'The Great Archives';
-    if (path.endsWith('/analytics')) return 'Signals & Insights';
     if (path.endsWith('/settings')) return 'System Preferences';
     return 'Auto Memory';
   };
@@ -39,24 +36,22 @@ const AppShellContent = () => {
         style={{
           flex: 1,
           height: '100vh',
-          overflow: 'hidden'
+          position: 'relative',
+          overflow: 'hidden',
+          background: isHomePage
+            ? `linear-gradient(to right, #07060f 0%, transparent 6%), url(${homeBg}) center / cover no-repeat fixed`
+            : `linear-gradient(to right, #07060f 0%, transparent 6%) var(--bg-base)`
         }}
       >
         {/* Sticky Top Header Bar */}
-        <TopBar title={getPageTitle()} />
+        <TopBar title={getPageTitle()} isHomePage={isHomePage} />
         
-        {/* Scrollable Workspace Container */}
         <main
           style={{
             flex: 1,
-            overflowY: 'auto',
+            overflowY: isHomePage ? 'hidden' : 'auto',
             padding: 'var(--space-lg)',
-            backgroundColor: 'var(--bg-base)',
-            backgroundImage: isHomePage ? `linear-gradient(rgba(15, 13, 26, 0.85), rgba(15, 13, 26, 0.92)), url(${homeBg})` : 'none',
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-            backgroundAttachment: 'fixed'
+            backgroundColor: 'transparent'
           }}
         >
           <Outlet />

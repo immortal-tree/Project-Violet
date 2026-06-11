@@ -68,7 +68,7 @@ function SourceCard({ source, state, onConnect }) {
 
       {/* Name */}
       <span style={{
-        fontFamily: "'Inter', sans-serif",
+        fontFamily: "'Cormorant Garamond', Georgia, serif",
         fontSize: 18,
         fontWeight: 500,
         color: '#e8e2fc',
@@ -93,7 +93,7 @@ function SourceCard({ source, state, onConnect }) {
           transition: 'background 0.4s ease',
         }} />
         <span style={{
-          fontFamily: "'Inter', sans-serif",
+          fontFamily: "'Cormorant Garamond', Georgia, serif",
           fontSize: 13,
           color: isConnected ? color : '#a89ed4',
         }}>
@@ -117,7 +117,7 @@ function SourceCard({ source, state, onConnect }) {
             : 'rgba(42,37,69,0.8)'}`,
           borderRadius: 8,
           color: isConnected ? '#e8e2fc' : '#a89ed4',
-          fontFamily: "'Inter', sans-serif",
+          fontFamily: "'Cormorant Garamond', Georgia, serif",
           fontSize: 14,
           cursor: isConnected || isConnecting ? 'default' : 'pointer',
           display: 'flex',
@@ -329,7 +329,7 @@ function ProgressSection({ onComplete, isAdditional }) {
 
         {/* Percentage */}
         <span style={{
-          fontFamily: "'Inter', sans-serif",
+          fontFamily: "'Cormorant Garamond', Georgia, serif",
           fontSize: 14,
           color: '#a89ed4',
           minWidth: 38,

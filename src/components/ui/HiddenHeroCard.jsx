@@ -4,7 +4,7 @@ import { StatCard } from './StatCard';
 import { WaxSealIcon, CodeBracketsIcon, PeopleGroupIcon, ShieldCheckIcon, StarIcon } from '../icons';
 import { useSoundEffect } from '../../hooks/useSoundEffect';
 
-export const HiddenHeroCard = ({ contributor }) => {
+export const HiddenHeroCard = ({ contributor, style = {} }) => {
   const navigate = useNavigate();
   const playSound = useSoundEffect();
 
@@ -24,12 +24,13 @@ export const HiddenHeroCard = ({ contributor }) => {
       className="card-surface"
       style={{
         boxShadow: 'inset 0 0 40px rgba(92,69,196,0.08)',
-        padding: 'var(--space-lg)',
-        width: '100%'
+        padding: '12px var(--space-md)',
+        width: '100%',
+        ...style
       }}
     >
       {/* Header */}
-      <div className="flex align-center gap-xs" style={{ marginBottom: 'var(--space-md)' }}>
+      <div className="flex align-center gap-xs" style={{ marginBottom: 'var(--space-sm)' }}>
         <WaxSealIcon size={28} />
         <h4 className="font-display" style={{ fontSize: '15px', color: 'var(--gold-bright)' }}>
           Hidden Hero of the Month
@@ -42,7 +43,7 @@ export const HiddenHeroCard = ({ contributor }) => {
           .hidden-hero-body {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: var(--space-lg);
+            gap: var(--space-md);
           }
           .hero-left-section {
             display: flex;
@@ -52,17 +53,17 @@ export const HiddenHeroCard = ({ contributor }) => {
           }
           .avatar-container {
             position: relative;
-            width: 80px;
-            height: 80px;
+            width: 64px;
+            height: 64px;
             flex-shrink: 0;
           }
           .avatar-circle {
-            width: 72px;
-            height: 72px;
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
             background-color: var(--violet-deep);
             color: var(--violet-ghost);
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 600;
             position: absolute;
             top: 4px;
@@ -73,8 +74,8 @@ export const HiddenHeroCard = ({ contributor }) => {
             position: absolute;
             top: 0;
             left: 0;
-            width: 80px;
-            height: 80px;
+            width: 64px;
+            height: 64px;
             pointer-events: none;
             color: var(--gold-warm);
             opacity: 0.7;
@@ -118,13 +119,13 @@ export const HiddenHeroCard = ({ contributor }) => {
           </div>
           
           <div className="flex flex-col">
-            <h3 className="font-display" style={{ fontSize: '22px', color: 'var(--text-primary)', marginBottom: '4px' }}>
+            <h3 className="font-display" style={{ fontSize: '18px', color: 'var(--text-primary)', marginBottom: '2px' }}>
               {name}
             </h3>
-            <span style={{ fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '500', marginBottom: '8px' }}>
+            <span style={{ fontSize: '12px', color: 'var(--text-secondary)', fontWeight: '500', marginBottom: '4px' }}>
               {role}
             </span>
-            <p className="font-body" style={{ fontSize: '13px', fontStyle: 'italic', color: '#d4b780', lineHeight: '1.5' }}>
+            <p className="font-body" style={{ fontSize: '12px', fontStyle: 'italic', color: '#d4b780', lineHeight: '1.4' }}>
               "{tagline}"
             </p>
           </div>
@@ -140,7 +141,7 @@ export const HiddenHeroCard = ({ contributor }) => {
       </div>
 
       {/* Footer Link */}
-      <div style={{ marginTop: 'var(--space-md)', borderTop: '1px solid rgba(42, 37, 69, 0.4)', paddingTop: 'var(--space-sm)', textAlign: 'right' }}>
+      <div style={{ marginTop: 'var(--space-sm)', borderTop: '1px solid rgba(42, 37, 69, 0.4)', paddingTop: 'var(--space-xs)', textAlign: 'right' }}>
         <a
           href={`/app/discover?id=${id}`}
           onClick={handleViewStory}

@@ -12,9 +12,6 @@ const AppShell = lazy(() => import('./components/layout/AppShell'));
 const Home = lazy(() => import('./pages/Home'));
 const Discover = lazy(() => import('./pages/Discover'));
 const Letters = lazy(() => import('./pages/Letters'));
-const Stories = lazy(() => import('./pages/Stories'));
-const Archive = lazy(() => import('./pages/Archive'));
-const Analytics = lazy(() => import('./pages/Analytics'));
 const Settings = lazy(() => import('./pages/Settings'));
 
 // Loading Fallback Component
@@ -98,9 +95,6 @@ export const App = () => {
               <Route path="home" element={<Home />} />
               <Route path="discover" element={<Discover />} />
               <Route path="letters" element={<Letters />} />
-              <Route path="stories" element={<Stories />} />
-              <Route path="archive" element={<Archive />} />
-              <Route path="analytics" element={<Analytics />} />
               <Route path="settings" element={<Settings />} />
               {/* Fallback route under /app */}
               <Route path="*" element={<Navigate to="home" replace />} />
